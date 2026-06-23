@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       'X-Title': 'Chatbot Carreras'
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-exp:free',
+      model: 'google/gemini-2.0-flash-lite-001',
       max_tokens: 300,
       temperature: 0.2,
       messages: [
