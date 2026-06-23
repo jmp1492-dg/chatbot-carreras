@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       'X-Title': 'Chatbot Carreras'
     },
     body: JSON.stringify({
-      model: 'qwen/qwen-2.5-7b-instruct:free',
+      model: 'openrouter/free',
       max_tokens: 300,
       temperature: 0.2,
       messages: [
