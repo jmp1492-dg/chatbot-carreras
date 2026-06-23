@@ -1,0 +1,6 @@
+{
+  "name": "chatbot-carreras",
+  "version": "1.0.0",
+  "description": "Chatbot IA para páginas de carreras atléticas",
+  "engines": { "node": "18.x" }
+}
