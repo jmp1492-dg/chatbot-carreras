@@ -1,0 +1,186 @@
+<!-- 
+  CHATBOT CORRE POR LOS ODS
+  Pegar en WordPress: Bloques > HTML personalizado
+  O añadir como shortcode via plugin "Insert Headers and Footers"
+  
+  Cambiar VERCEL_URL por la URL real de tu proyecto Vercel
+  Cambiar NOMBRE_CARRERA por el nombre del archivo .md sin extensión (ej: ods2026)
+-->
+
+<style>
+  #chatbot-carrera {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  #chatbot-boton {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 26px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+  #chatbot-ventana {
+    display: none;
+    width: 320px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    margin-bottom: 12px;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  #chatbot-ventana.abierto { display: flex; }
+  #chatbot-cabecera {
+    background: #2e7d32;
+    color: white;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #chatbot-cerrar {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  #chatbot-mensajes {
+    height: 260px;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f9f9f9;
+  }
+  .msg-bot, .msg-user {
+    max-width: 85%;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .msg-bot {
+    background: #e8f5e9;
+    color: #1b1b1b;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-user {
+    background: #2e7d32;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .msg-cargando {
+    background: #e8f5e9;
+    color: #666;
+    align-self: flex-start;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    border-bottom-left-radius: 4px;
+  }
+  #chatbot-entrada {
+    display: flex;
+    border-top: 1px solid #e0e0e0;
+    background: white;
+  }
+  #chatbot-input {
+    flex: 1;
+    border: none;
+    padding: 12px 14px;
+    font-size: 13px;
+    outline: none;
+    background: transparent;
+  }
+  #chatbot-enviar {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 0 16px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  #chatbot-enviar:disabled { opacity: 0.5; cursor: default; }
+</style>
+
+<div id="chatbot-carrera">
+  <div id="chatbot-ventana">
+    <div id="chatbot-cabecera">
+      🌿 Asistente – Corre por los ODS
+      <button id="chatbot-cerrar" onclick="chatbotToggle()">×</button>
+    </div>
+    <div id="chatbot-mensajes">
+      <div class="msg-bot">¡Hola! Soy el asistente de la <strong>VIII Carrera por la Sostenibilidad</strong>. ¿En qué puedo ayudarte?</div>
+    </div>
+    <div id="chatbot-entrada">
+      <input id="chatbot-input" type="text" placeholder="Escribe tu pregunta..." maxlength="200"
+        onkeydown="if(event.key==='Enter') chatbotEnviar()">
+      <button id="chatbot-enviar" onclick="chatbotEnviar()">➤</button>
+    </div>
+  </div>
+  <button id="chatbot-boton" onclick="chatbotToggle()" title="Asistente de la carrera">💬</button>
+</div>
+
+<script>
+  const VERCEL_URL = 'https://TU-PROYECTO.vercel.app'; // ← cambiar esto
+  const NOMBRE_CARRERA = 'ods2026';                    // ← cambiar si la carrera cambia
+
+  function chatbotToggle() {
+    document.getElementById('chatbot-ventana').classList.toggle('abierto');
+  }
+
+  async function chatbotEnviar() {
+    const input = document.getElementById('chatbot-input');
+    const pregunta = input.value.trim();
+    if (!pregunta) return;
+
+    const mensajes = document.getElementById('chatbot-mensajes');
+    const boton = document.getElementById('chatbot-enviar');
+
+    // Mostrar pregunta del usuario
+    mensajes.innerHTML += `<div class="msg-user">${pregunta}</div>`;
+    input.value = '';
+    boton.disabled = true;
+
+    // Indicador de carga
+    const cargando = document.createElement('div');
+    cargando.className = 'msg-cargando';
+    cargando.textContent = 'Escribiendo...';
+    mensajes.appendChild(cargando);
+    mensajes.scrollTop = mensajes.scrollHeight;
+
+    try {
+      const res = await fetch(`${VERCEL_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pregunta, carrera: NOMBRE_CARRERA })
+      });
+      const data = await res.json();
+      cargando.remove();
+      mensajes.innerHTML += `<div class="msg-bot">${data.respuesta || 'Lo siento, no he podido responder.'}</div>`;
+    } catch (e) {
+      cargando.remove();
+      mensajes.innerHTML += `<div class="msg-bot">Error de conexión. Inténtalo de nuevo.</div>`;
+    }
+
+    boton.disabled = false;
+    mensajes.scrollTop = mensajes.scrollHeight;
+  }
+</script>
