@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       'X-Title': 'Chatbot Carreras'
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-3.2-3b-instruct:free',
+      model: 'mistralai/mistral-7b-instruct:free',
       max_tokens: 300,
       temperature: 0.2,
       messages: [
