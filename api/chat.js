@@ -52,6 +52,7 @@ export default async function handler(req, res) {
 
   if (!response.ok) {
     const err = await response.text();
+    console.error('OpenRouter error:', response.status, err);
     return res.status(500).json({ error: 'Error en OpenRouter API', detalle: err });
   }
 
